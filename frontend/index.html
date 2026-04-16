@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PowerSense - Energy Agent</title>
+    <!-- Modern web fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+    <script src="app.js" defer></script>
+</head>
+<body>
+
+    <!-- AUTHENTICATION VIEW -->
+    <div id="auth-view" class="auth-container">
+        <div class="auth-box glass">
+            <div class="brand">
+                <div class="logo">⚡</div>
+                <h2>PowerSense</h2>
+            </div>
+            <p>Sign in to your energy monitoring agent.</p>
+            
+            <form id="auth-form">
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="username" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="password" required>
+                </div>
+                <button type="submit" class="btn-primary" id="btn-login">Log In</button>
+                <div class="auth-toggle">
+                    <span id="auth-toggle-text">Don't have an account? <a href="#" id="toggle-auth-mode">Sign Up</a></span>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MAIN DASHBOARD VIEW (Hidden by Default) -->
+    <div id="app-view" class="app-container hidden">
+        <!-- Header / Nav -->
+        <header class="app-header glass">
+            <div class="header-left">
+                <div class="brand">
+                    <div class="logo">⚡</div>
+                    <div>
+                        <h2>PowerSense</h2>
+                        <span class="subtitle">ENERGY MONITORING AGENT</span>
+                    </div>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="agent-badge">● Agent active</div>
+                <button id="btn-logout" class="btn-ghost">Logout</button>
+            </div>
+        </header>
+
+        <nav class="top-tabs glass">
+            <ul id="tab-nav">
+                <li class="active" data-tab="overview">Overview</li>
+                <li data-tab="devices">Devices</li>
+                <li data-tab="bill-prediction">Bill Prediction</li>
+                <li data-tab="savings-tips">Savings Tips</li>
+            </ul>
+        </nav>
+
+        <main class="content">
+
+            <!-- TAB: OVERVIEW -->
+            <div id="tab-overview" class="tab-pane active">
+                
+                <!-- Metrics -->
+                <div class="metrics-row">
+                    <div class="metric-card glass">
+                        <h4>TODAY'S USAGE</h4>
+                        <div class="value"><span id="val-today">0.0</span> kWh</div>
+                    </div>
+                    <div class="metric-card glass">
+                        <h4>THIS MONTH</h4>
+                        <div class="value"><span id="val-month">0.0</span> kWh</div>
+                    </div>
+                    <div class="metric-card glass">
+                        <h4>EST. BILL</h4>
+                        <div class="value">₹<span id="val-bill">0.00</span></div>
+                    </div>
+                    <div class="metric-card glass">
+                        <h4>PEAK LOAD</h4>
+                        <div class="value"><span id="val-peak">0.0</span> kW</div>
+                    </div>
+                </div>
+
+                <!-- Charts Row -->
+                <div class="charts-row">
+                    <div class="chart-card glass">
+                        <h4>USAGE BY DEVICE (KWH)</h4>
+                        <div class="chart-wrapper">
+                            <canvas id="dailyUsageChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-card glass">
+                        <h4>ALL RECORDED HISTORY</h4>
+                        <div class="chart-wrapper">
+                            <canvas id="timeUsageChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB: DEVICES (Log new devices here) -->
+            <div id="tab-devices" class="tab-pane hidden">
+                <div class="split-layout">
+                    <div class="glass form-panel">
+                        <h3>Log New Usage</h3>
+                        <form id="usage-form">
+                            <div class="form-group">
+                                <label>Appliance Category</label>
+                                <select id="appliance" required>
+                                    <option value="AC/Cooling">AC/Cooling</option>
+                                    <option value="Water heater">Water heater</option>
+                                    <option value="Appliances">Appliances</option>
+                                    <option value="Lighting">Lighting</option>
+                                    <option value="TV/Screens">TV/Screens</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Usage (kWh)</label>
+                                <input type="number" step="0.01" id="kwh" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Cost Contribution</label>
+                                <input type="number" step="0.01" id="cost" required>
+                            </div>
+                            <button type="submit" class="btn-primary">Record Usage</button>
+                        </form>
+                    </div>
+                    <div class="glass chart-panel">
+                        <h3>Device Consumption Distribution</h3>
+                        <div class="chart-wrapper doughnut-wrapper">
+                            <canvas id="deviceShareChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB: BILL PREDICTION -->
+            <div id="tab-bill-prediction" class="tab-pane hidden">
+                <div class="glass full-card">
+                    <h3>Bill Simulator Hub</h3>
+                    <p>Enter data into the devices tab, and watch predictions change in real-time. The more data you provide, the better the prediction model.</p>
+                    <div class="prediction-big">
+                        <span>Predicted Bill This Month:</span>
+                        <h2 id="sim-bill">₹0.00</h2>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB: SAVINGS TIPS -->
+            <div id="tab-savings-tips" class="tab-pane hidden">
+                <div class="glass full-card">
+                    <h3>Agent Generated Insights</h3>
+                    <ul class="insights-list" id="tips-list">
+                        <li>Start logging usages to receive intelligent suggestions.</li>
+                    </ul>
+                </div>
+            </div>
+
+        </main>
+    </div>
+</body>
+</html>
