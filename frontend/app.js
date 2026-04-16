@@ -110,6 +110,11 @@ async function handleAuth(e) {
         };
     }
 
+    let btn = document.getElementById('btn-login');
+    const originalText = btn.textContent;
+    btn.textContent = "Connecting...";
+    btn.disabled = true;
+
     try {
         const res = await fetch(API_BASE + endpoint, {
             method: 'POST',
@@ -130,6 +135,9 @@ async function handleAuth(e) {
     } catch (err) {
         console.error(err);
         alert("Unable to connect to the server. Please try again.");
+    } finally {
+        btn.textContent = originalText;
+        btn.disabled = false;
     }
 }
 
