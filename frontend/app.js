@@ -1,4 +1,4 @@
-const API_BASE = 'https://your-unique-link-here.onrender.com/api';
+const API_BASE = 'https://electricity-usage-monitoring-agent-1.onrender.com/api';
 
 
 // Global State
