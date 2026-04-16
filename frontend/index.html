@@ -19,20 +19,37 @@
                 <div class="logo">⚡</div>
                 <h2>PowerSense</h2>
             </div>
-            <p>Sign in to your energy monitoring agent.</p>
+            <p id="auth-subtitle">Create an account to track your energy.</p>
             
             <form id="auth-form">
+                <!-- Group shown only in Sign Up Mode -->
+                <div id="signup-fields">
+                    <div class="form-group">
+                        <label>Name</label>
+                        <input type="text" id="name_input">
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="email_input">
+                    </div>
+                    <div class="form-group">
+                        <label>Mobile Number (Optional)</label>
+                        <input type="tel" id="mobile_input">
+                    </div>
+                </div>
+
                 <div class="form-group">
-                    <label>Username</label>
+                    <label id="identity-label">Username</label>
                     <input type="text" id="username" required>
                 </div>
                 <div class="form-group">
-                    <label>Password</label>
-                    <input type="password" id="password" required>
+                    <label>Password (Min 8 Characters)</label>
+                    <input type="password" id="password" required minlength="8">
                 </div>
-                <button type="submit" class="btn-primary" id="btn-login">Log In</button>
+                
+                <button type="submit" class="btn-primary" id="btn-login">Sign Up</button>
                 <div class="auth-toggle">
-                    <span id="auth-toggle-text">Don't have an account? <a href="#" id="toggle-auth-mode">Sign Up</a></span>
+                    <span id="auth-toggle-text">Already have an account? <a href="#" id="toggle-auth-mode">Log In</a></span>
                 </div>
             </form>
         </div>

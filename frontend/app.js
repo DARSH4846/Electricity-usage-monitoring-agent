@@ -1,9 +1,8 @@
 const API_BASE = 'https://electricity-usage-monitoring-agent-1.onrender.com/api';
 
-
 // Global State
 let currentUser = null; // Stores user_id
-let isLoginMode = true;
+let isLoginMode = false; // SIGN UP by default now
 
 // Chart Instances
 let dailyUsageChart = null;
@@ -14,22 +13,50 @@ let deviceShareChart = null;
 document.addEventListener('DOMContentLoaded', () => {
     checkAuthStatus();
     attachEventListeners();
+    renderAuthUI(); // Configure initial mode appearance
 });
 
-function attachEventListeners() {
-    // Auth Toggles
+function renderAuthUI() {
+    const signupFields = document.getElementById('signup-fields');
+    const identityLabel = document.getElementById('identity-label');
+    const btn = document.getElementById('btn-login');
+    const toggleText = document.getElementById('auth-toggle-text');
+    const subtitle = document.getElementById('auth-subtitle');
+
+    if (isLoginMode) {
+        signupFields.classList.add('hidden');
+        identityLabel.textContent = "Email / Mobile / Username";
+        btn.textContent = "Log In";
+        subtitle.textContent = "Welcome back to your energy dashboard.";
+        toggleText.innerHTML = `Don't have an account? <a href="#" id="toggle-auth-mode">Sign Up</a>`;
+    } else {
+        signupFields.classList.remove('hidden');
+        identityLabel.textContent = "Choose a Username";
+        btn.textContent = "Sign Up";
+        subtitle.textContent = "Create an account to track your energy.";
+        toggleText.innerHTML = `Already have an account? <a href="#" id="toggle-auth-mode">Log In</a>`;
+        
+        // Enforce required fields
+        document.getElementById('name_input').required = true;
+        document.getElementById('email_input').required = true;
+    }
+
+    // Reattach toggler after innerHTML change
     document.getElementById('toggle-auth-mode').addEventListener('click', (e) => {
         e.preventDefault();
         isLoginMode = !isLoginMode;
-        document.getElementById('btn-login').textContent = isLoginMode ? 'Log In' : 'Sign Up';
-        document.getElementById('auth-toggle-text').innerHTML = isLoginMode ?
-            `Don't have an account? <a href="#" id="toggle-auth-mode">Sign Up</a>` :
-            `Already have an account? <a href="#" id="toggle-auth-mode">Log In</a>`;
+        
+        // Reset requirements if hiding
+        if (isLoginMode) {
+            document.getElementById('name_input').required = false;
+            document.getElementById('email_input').required = false;
+        }
 
-        // reattach listener since we replaced innerHTML
-        document.getElementById('toggle-auth-mode').addEventListener('click', attachEventListeners);
+        renderAuthUI();
     });
+}
 
+function attachEventListeners() {
     // Form Submissions
     document.getElementById('auth-form').addEventListener('submit', handleAuth);
     document.getElementById('usage-form').addEventListener('submit', handleUsageSubmit);
@@ -55,18 +82,42 @@ function checkAuthStatus() {
 
 async function handleAuth(e) {
     e.preventDefault();
+    
     const u = document.getElementById('username').value;
     const p = document.getElementById('password').value;
-    const endpoint = isLoginMode ? '/login' : '/register';
+
+    if (p.length < 8) {
+        alert("Your password must be at least 8 characters long.");
+        return;
+    }
+
+    let endpoint, payload;
+
+    if (isLoginMode) {
+        endpoint = '/login';
+        payload = {
+            identifier: u,
+            password: p
+        };
+    } else {
+        endpoint = '/register';
+        payload = {
+            username: u,
+            name: document.getElementById('name_input').value,
+            email: document.getElementById('email_input').value,
+            mobile: document.getElementById('mobile_input').value || null,
+            password: p
+        };
+    }
 
     try {
         const res = await fetch(API_BASE + endpoint, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username: u, password: p })
+            body: JSON.stringify(payload)
         });
         const data = await res.json();
-
+        
         if (res.ok) {
             localStorage.setItem('poweruser_id', data.user_id);
             currentUser = data.user_id;
@@ -78,6 +129,7 @@ async function handleAuth(e) {
         }
     } catch (err) {
         console.error(err);
+        alert("Unable to connect to the server. Please try again.");
     }
 }
 
@@ -102,9 +154,9 @@ function switchTab(tabId) {
     // Panes
     document.querySelectorAll('.tab-pane').forEach(p => p.classList.add('hidden'));
     document.getElementById(`tab-${tabId}`).classList.remove('hidden');
-
+    
     // Resize charts if they become visible
-    if (tabId === 'devices' && deviceShareChart) deviceShareChart.resize();
+    if(tabId === 'devices' && deviceShareChart) deviceShareChart.resize();
 }
 
 // --- DATA FETCHING & CHARTS ---
@@ -122,17 +174,17 @@ async function fetchAnalysis() {
     try {
         const res = await fetch(API_BASE + '/analysis', { headers: getHeaders() });
         const data = await res.json();
-
+        
         // Update top metrics
         const metrics = data.dashboard_metrics;
         document.getElementById('val-today').textContent = metrics.today_usage;
         document.getElementById('val-month').textContent = metrics.month_usage;
         document.getElementById('val-bill').textContent = metrics.est_bill;
         document.getElementById('val-peak').textContent = metrics.peak_load;
-
+        
         // Update Bill Prediction Tab
         document.getElementById('sim-bill').textContent = `₹${metrics.est_bill}`;
-
+        
         // Update Insights
         const list = document.getElementById('tips-list');
         list.innerHTML = '';
@@ -150,7 +202,7 @@ async function fetchUsages() {
         const res = await fetch(API_BASE + '/usage', { headers: getHeaders() });
         const data = await res.json();
         renderCharts(data);
-    } catch (e) { console.error('Usage fetch error', e); }
+    } catch(e) { console.error('Usage fetch error', e); }
 }
 
 async function handleUsageSubmit(e) {
@@ -160,7 +212,7 @@ async function handleUsageSubmit(e) {
         kwh: parseFloat(document.getElementById('kwh').value),
         cost: parseFloat(document.getElementById('cost').value)
     };
-
+    
     try {
         await fetch(API_BASE + '/usage', {
             method: 'POST',
@@ -169,7 +221,7 @@ async function handleUsageSubmit(e) {
         });
         document.getElementById('usage-form').reset();
         await loadDashboardData(); // Refresh all UI
-    } catch (e) { console.error('Usage submit error', e); }
+    } catch(e) { console.error('Usage submit error', e); }
 }
 
 function renderCharts(data) {

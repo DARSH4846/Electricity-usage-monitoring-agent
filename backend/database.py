@@ -2,7 +2,7 @@ from sqlalchemy import create_engine, Column, Integer, Float, String, Date, Fore
 from sqlalchemy.orm import declarative_base, sessionmaker, relationship
 from datetime import date, datetime
 
-SQLALCHEMY_DATABASE_URL = "sqlite:///./usage_v2.db"
+SQLALCHEMY_DATABASE_URL = "sqlite:///./usage_v3.db"
 
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
@@ -15,6 +15,9 @@ class User(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String, unique=True, index=True)
+    email = Column(String, unique=True, index=True, nullable=True)
+    mobile = Column(String, unique=True, index=True, nullable=True)
+    name = Column(String, nullable=True)
     password_hash = Column(String)
     
     usages = relationship("UsageRecord", back_populates="owner")
