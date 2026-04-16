@@ -1,4 +1,5 @@
-const API_BASE = 'http://localhost:8000/api';
+const API_BASE = 'https://your-unique-link-here.onrender.com/api';
+
 
 // Global State
 let currentUser = null; // Stores user_id
@@ -21,12 +22,12 @@ function attachEventListeners() {
         e.preventDefault();
         isLoginMode = !isLoginMode;
         document.getElementById('btn-login').textContent = isLoginMode ? 'Log In' : 'Sign Up';
-        document.getElementById('auth-toggle-text').innerHTML = isLoginMode ? 
-            `Don't have an account? <a href="#" id="toggle-auth-mode">Sign Up</a>` : 
+        document.getElementById('auth-toggle-text').innerHTML = isLoginMode ?
+            `Don't have an account? <a href="#" id="toggle-auth-mode">Sign Up</a>` :
             `Already have an account? <a href="#" id="toggle-auth-mode">Log In</a>`;
-        
+
         // reattach listener since we replaced innerHTML
-        document.getElementById('toggle-auth-mode').addEventListener('click', attachEventListeners); 
+        document.getElementById('toggle-auth-mode').addEventListener('click', attachEventListeners);
     });
 
     // Form Submissions
@@ -65,7 +66,7 @@ async function handleAuth(e) {
             body: JSON.stringify({ username: u, password: p })
         });
         const data = await res.json();
-        
+
         if (res.ok) {
             localStorage.setItem('poweruser_id', data.user_id);
             currentUser = data.user_id;
@@ -101,9 +102,9 @@ function switchTab(tabId) {
     // Panes
     document.querySelectorAll('.tab-pane').forEach(p => p.classList.add('hidden'));
     document.getElementById(`tab-${tabId}`).classList.remove('hidden');
-    
+
     // Resize charts if they become visible
-    if(tabId === 'devices' && deviceShareChart) deviceShareChart.resize();
+    if (tabId === 'devices' && deviceShareChart) deviceShareChart.resize();
 }
 
 // --- DATA FETCHING & CHARTS ---
@@ -121,17 +122,17 @@ async function fetchAnalysis() {
     try {
         const res = await fetch(API_BASE + '/analysis', { headers: getHeaders() });
         const data = await res.json();
-        
+
         // Update top metrics
         const metrics = data.dashboard_metrics;
         document.getElementById('val-today').textContent = metrics.today_usage;
         document.getElementById('val-month').textContent = metrics.month_usage;
         document.getElementById('val-bill').textContent = metrics.est_bill;
         document.getElementById('val-peak').textContent = metrics.peak_load;
-        
+
         // Update Bill Prediction Tab
         document.getElementById('sim-bill').textContent = `₹${metrics.est_bill}`;
-        
+
         // Update Insights
         const list = document.getElementById('tips-list');
         list.innerHTML = '';
@@ -149,7 +150,7 @@ async function fetchUsages() {
         const res = await fetch(API_BASE + '/usage', { headers: getHeaders() });
         const data = await res.json();
         renderCharts(data);
-    } catch(e) { console.error('Usage fetch error', e); }
+    } catch (e) { console.error('Usage fetch error', e); }
 }
 
 async function handleUsageSubmit(e) {
@@ -159,7 +160,7 @@ async function handleUsageSubmit(e) {
         kwh: parseFloat(document.getElementById('kwh').value),
         cost: parseFloat(document.getElementById('cost').value)
     };
-    
+
     try {
         await fetch(API_BASE + '/usage', {
             method: 'POST',
@@ -168,7 +169,7 @@ async function handleUsageSubmit(e) {
         });
         document.getElementById('usage-form').reset();
         await loadDashboardData(); // Refresh all UI
-    } catch(e) { console.error('Usage submit error', e); }
+    } catch (e) { console.error('Usage submit error', e); }
 }
 
 function renderCharts(data) {
